@@ -36,21 +36,19 @@ const offset = {
   y: p[1],
 };
 
-const getGridTranslation = (x, y) => {
+const getGridTranslation = ({ x, y }) => {
   return `translate(${x * offset.x} ${(y + (x % 2) / 2) * offset.y})`;
 };
 
-const getKey = (...args) => args.join('_');
-
 const HexTile = (props) => {
-  const { id, ...restProps } = props;
+  const { tile, ...restProps } = props;
 
   const [isHovered, setHovered] = React.useState(false);
   const [state, actions] = useAppState();
 
   const classname = cn('hex-tile', {
     'is-hovered' : isHovered,
-    'is-selected': state.selectedHexId === id,
+    'is-selected': state.selectedTile === tile,
   });
 
   return (
@@ -62,7 +60,7 @@ const HexTile = (props) => {
         points={6}
       />
       <EquilateralPolygon
-        onMouseDown={() => actions.focusHex(id)}
+        onMouseDown={() => actions.focusHex(tile)}
         onMouseUp={() => actions.selectFocusedHex()}
         onMouseOver={() => setHovered(true)}
         onMouseOut={() => setHovered(false)}
@@ -93,16 +91,16 @@ const Map = () => {
     svgPanzoom.current.on('zoomend', () => {
       actions.setMapZooming(false);
     });
-  }, []);
+  }, [actions]);
 
   return (
     <svg id="svg-viewport" className="fill focus-none">
       <g ref={svg}>
-        {map(state.map, ({ x, y }) => (
+        {map(state.map, (tile) => (
           <HexTile
-          key={getKey(x, y)}
-          id={getKey(x, y)}
-          transform={getGridTranslation(x, y)}
+            key={tile.id}
+            tile={tile}
+            transform={getGridTranslation(tile)}
           />
         ))}
       </g>
@@ -111,10 +109,14 @@ const Map = () => {
 };
 
 const Information = () => {
-  const [state] = useAppState();
+  const [{ selectedTile }] = useAppState();
 
-  return (
-    <h1>{state.selectedHexId}</h1>
+  return !!selectedTile && (
+    <div className="p-content">
+      <h1>Tile {selectedTile.id}</h1>
+      <p>x: {selectedTile.x}</p>
+      <p>y: {selectedTile.y}</p>
+    </div>
   );
 };
 

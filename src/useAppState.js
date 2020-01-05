@@ -1,34 +1,36 @@
+import { uniqueId } from 'lodash';
+
 import createAppState from './utils/createAppState';
 
 const initialState = {
 };
 
 const mutators = {
-  focusHex: (state, id) => {
-    state.focusedHex = id;
+  focusHex: (state, tile) => {
+    state.focusedTile = tile;
   },
   generateMap: (state) => {
     const map = [];
 
     for (let x = 0; x < 5; x += 1) {
       for (let y = 0; y < 5; y += 1) {
-        map.push({ x, y });
+        map.push({ id: uniqueId(), x, y });
       }
     }
 
     state.map = map;
   },
   selectFocusedHex: (state) => {
-    if (state.focusedHex) {
-      state.selectedHexId = state.focusedHex;
+    if (state.focusedTile) {
+      state.selectedTile = state.focusedTile;
     }
   },
   setMapPanning: (state, mapPanning) => {
-    delete state.focusedHex;
+    delete state.focusedTile;
     state.mapPanning = mapPanning;
   },
   setMapZooming: (state, mapZooming) => {
-    delete state.focusedHex;
+    delete state.focusedTile;
     state.mapZooming = mapZooming;
   },
 };
