@@ -36,20 +36,43 @@ const offset = {
   y: p[1],
 };
 
-const getGridTranslation = ({ x, y }) => {
-  return `translate(${x * offset.x} ${(y + (x % 2) / 2) * offset.y})`;
+const getGridOffsets = ({ x, y }) => {
+  return {
+    x: x * offset.x,
+    y: (y - (x % 2) / 2) * offset.y,
+  }
+};
+
+const getGridTranslation = (tile) => {
+  const { x, y } = getGridOffsets(tile);
+  return `translate(${x} ${y})`;
+};
+
+// https://stackoverflow.com/questions/15919783/distance-between-2-hexagons-on-hexagon-grid
+const getDistanceBetweenTiles = (tileA, tileB) => {
+  if (tileA && tileB) {
+    const du = tileB.x - tileA.x;
+    const dv = tileB.yf - tileA.yf;
+    if ((du >= 0 && dv >= 0) || (du < 0 && dv < 0)) {
+      return Math.max(Math.abs(du), Math.abs(dv))
+    }
+    return Math.abs(du) + Math.abs(dv);
+  }
+  return null;
 };
 
 const HexTile = (props) => {
   const { tile, ...restProps } = props;
 
   const [isHovered, setHovered] = React.useState(false);
-  const [state, actions] = useAppState();
+  const [{ selectedTile }, actions] = useAppState();
 
   const classname = cn('hex-tile', {
     'is-hovered' : isHovered,
-    'is-selected': state.selectedTile === tile,
+    'is-selected': tile === selectedTile,
   });
+
+  const distance = getDistanceBetweenTiles(tile, selectedTile);
 
   return (
     <g className={classname} {...restProps}>
@@ -68,6 +91,7 @@ const HexTile = (props) => {
         radius={HEX_DIAMETER / 2}
         points={6}
       />
+      <text>{distance}</text>
     </g>
   );
 };
@@ -94,7 +118,7 @@ const Map = () => {
   }, [actions]);
 
   return (
-    <svg id="svg-viewport" className="fill focus-none">
+    <svg id="svg-viewport" className="fill focus-none cursor-pointer">
       <g ref={svg}>
         {map(state.map, (tile) => (
           <HexTile
@@ -116,6 +140,7 @@ const Information = () => {
       <h1>Tile {selectedTile.id}</h1>
       <p>x: {selectedTile.x}</p>
       <p>y: {selectedTile.y}</p>
+      <p>yf: {selectedTile.yf}</p>
     </div>
   );
 };

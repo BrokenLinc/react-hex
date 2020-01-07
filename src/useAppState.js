@@ -12,9 +12,14 @@ const mutators = {
   generateMap: (state) => {
     const map = [];
 
-    for (let x = 0; x < 5; x += 1) {
-      for (let y = 0; y < 5; y += 1) {
-        map.push({ id: uniqueId(), x, y });
+    for (let x = 0; x < 9; x += 1) {
+      for (let y = 0; y < 7; y += 1) {
+        map.push({
+          id: uniqueId(),
+          x,
+          y,
+          yf: y + Math.floor(x / 2), // facial adjacency
+        });
       }
     }
 
