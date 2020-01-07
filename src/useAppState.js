@@ -1,8 +1,9 @@
-import { uniqueId } from 'lodash';
+import { assign, uniqueId } from 'lodash';
 
 import createAppState from './utils/createAppState';
 
 const initialState = {
+  ship: { x: 0, y: 0, speed: 1 },
 };
 
 const mutators = {
@@ -14,16 +15,15 @@ const mutators = {
 
     for (let x = 0; x < 9; x += 1) {
       for (let y = 0; y < 7; y += 1) {
-        map.push({
-          id: uniqueId(),
-          x,
-          y,
-          yf: y + Math.floor(x / 2), // facial adjacency
-        });
+        map.push({ id: uniqueId(), x, y });
       }
     }
 
     state.map = map;
+  },
+  moveShipToTile: (state, tile) => {
+    const { x, y } = tile;
+    assign(state.ship, { x, y });
   },
   selectFocusedHex: (state) => {
     if (state.focusedTile) {

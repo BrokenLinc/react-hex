@@ -48,11 +48,13 @@ const getGridTranslation = (tile) => {
   return `translate(${x} ${y})`;
 };
 
+const yf = (p) => p.y + Math.floor(p.x / 2);
+
 // https://stackoverflow.com/questions/15919783/distance-between-2-hexagons-on-hexagon-grid
 const getDistanceBetweenTiles = (tileA, tileB) => {
   if (tileA && tileB) {
     const du = tileB.x - tileA.x;
-    const dv = tileB.yf - tileA.yf;
+    const dv = yf(tileB) - yf(tileA);
     if ((du >= 0 && dv >= 0) || (du < 0 && dv < 0)) {
       return Math.max(Math.abs(du), Math.abs(dv))
     }
@@ -65,7 +67,7 @@ const HexTile = (props) => {
   const { tile, ...restProps } = props;
 
   const [isHovered, setHovered] = React.useState(false);
-  const [{ selectedTile }, actions] = useAppState();
+  const [{ selectedTile, ship }, actions] = useAppState();
 
   const classname = cn('hex-tile', {
     'is-hovered' : isHovered,
@@ -73,6 +75,14 @@ const HexTile = (props) => {
   });
 
   const distance = getDistanceBetweenTiles(tile, selectedTile);
+
+  const isShipHere = (ship.x === tile.x && ship.y === tile.y);
+
+  const handleClick = () => {
+    if (getDistanceBetweenTiles(tile, ship) <= ship.speed) {
+      actions.moveShipToTile(tile);
+    }
+  };
 
   return (
     <g className={classname} {...restProps}>
@@ -83,6 +93,7 @@ const HexTile = (props) => {
         points={6}
       />
       <EquilateralPolygon
+        onClick={handleClick}
         onMouseDown={() => actions.focusHex(tile)}
         onMouseUp={() => actions.selectFocusedHex()}
         onMouseOver={() => setHovered(true)}
@@ -92,6 +103,9 @@ const HexTile = (props) => {
         points={6}
       />
       <text>{distance}</text>
+      {isShipHere && (
+        <circle r={30} fill="white" stroke="red" strokeWidth={3} />
+      )}
     </g>
   );
 };
@@ -140,7 +154,7 @@ const Information = () => {
       <h1>Tile {selectedTile.id}</h1>
       <p>x: {selectedTile.x}</p>
       <p>y: {selectedTile.y}</p>
-      <p>yf: {selectedTile.yf}</p>
+      <p>yf: {yf(selectedTile)}</p>
     </div>
   );
 };
